@@ -6,6 +6,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 /// This is a simple class that represents an absolute instant of time.
 /// Internally, it represents time as the difference, measured in milliseconds, between the current
 /// time and midnight, January 1, 1970 UTC.
+#[derive(Debug, Clone)]
 pub struct Time {
     val: u64,
 }
@@ -92,7 +93,7 @@ impl Interval {
             .expect("Time went backwards");
         let cur_time = Time::new(cur_time.as_millis() as u64);
         Interval {
-            start: cur_time,
+            start: cur_time.clone(),
             end: cur_time + duration,
         }
     }
@@ -128,7 +129,7 @@ impl PartialEq for Interval {
 
 impl ToString for Interval {
     fn to_string(&self) -> String {
-        format!("{}-{}", self.start, self.end)
+        format!("{:?}-{:?}", self.start, self.end) // Note:might want to convert ms since UNIX EPOCH to human readable time
     }
 }
 
@@ -226,21 +227,30 @@ mod tests {
     }
 
     #[test]
-    fn test_constructor_Time() {
+    fn test_constructor_time() {
         assert_eq!(Time { val: 0 }.val, 0);
         assert_eq!(Time::new(0).val, 0);
     }
 
     #[test]
-    fn test_constructor_Interval {
-        assert_eq!(Interval { start: 0, end: 0 }.start, 0);
+    fn test_constructor_interval() {
+        assert_eq!(
+            Interval {
+                start: Time::new(0),
+                end: Time::new(0)
+            }
+            .start,
+            Time::new(0)
+        );
         let cur_time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
         let offset = Time::new(1000000);
-        let curInterval = Interval::new(offset);
-        assert!(cur_time as u64 < curInterval.start.val);
-        assert!(cur_time + (cur_time+offset).val);
+        let cur_interval = Interval::new(offset.clone());
+        println!("{:?}", cur_time.as_millis() as u64);
+        println!("{:?}", cur_interval.start);
+        assert!((cur_time.as_millis() as u64) <= cur_interval.start.val);
+        assert!(cur_interval.end >= Time::new(cur_time.as_millis() as u64) + offset);
     }
 
     time_partial_eq! {
