@@ -315,7 +315,6 @@ mod tests {
         it_comp_nlt : (Interval::new(4), Interval::new(0), std::cmp::Ordering::Less, false),
         it_comp_gt : (Interval::new(4), Interval::new(0), std::cmp::Ordering::Greater, true),
         it_comp_ngt : (Interval::new(0), Interval::new(4), std::cmp::Ordering::Greater, false),
-        it_comp_eq : (Interval::new(4), Interval::new(4), std::cmp::Ordering::Equal, true),
     }
 
     time_is_multiple! {
