@@ -1,8 +1,11 @@
 [package]
 name = "core"
 version = "0.1.0"
-edition = "2021"
+edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tokio = { version = "1.17.0", features = ["full"] }
+typed-builder = "0.10.0"
+axum = "0.5.3"
