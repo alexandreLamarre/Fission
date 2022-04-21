@@ -1,11 +1,12 @@
 #![warn(dead_code)] //FIXME: remove after initial development
 use std::ops::Add;
 use std::ops::Sub;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// This is a simple class that represents an absolute instant of time.
 /// Internally, it represents time as the difference, measured in milliseconds, between the current
 /// time and midnight, January 1, 1970 UTC.
-struct Time {
+pub struct Time {
     val: u64,
 }
 
@@ -73,6 +74,61 @@ impl Sub for Time {
 impl ToString for Time {
     fn to_string(&self) -> String {
         format!("{}", self.val)
+    }
+}
+
+/// Acts as an object for representing a time interval.
+pub struct Interval {
+    start: Time,
+    end: Time,
+}
+
+impl Interval {
+    // Create a new interval from the current time in milliseconds
+    // measured from the UNIX_EPOCH
+    fn new(duration: Time) -> Interval {
+        let cur_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        let cur_time = Time::new(cur_time.as_millis() as u64);
+        Interval {
+            start: cur_time,
+            end: cur_time + duration,
+        }
+    }
+}
+
+impl Add for Interval {
+    type Output = Interval;
+
+    fn add(self, other: Interval) -> Interval {
+        Interval {
+            start: self.start + other.start,
+            end: self.end + other.end,
+        }
+    }
+}
+
+impl Sub for Interval {
+    type Output = Interval;
+
+    fn sub(self, other: Interval) -> Interval {
+        Interval {
+            start: self.start - other.start,
+            end: self.end - other.end,
+        }
+    }
+}
+
+impl PartialEq for Interval {
+    fn eq(&self, other: &Interval) -> bool {
+        self.start == other.start && self.end == other.end
+    }
+}
+
+impl ToString for Interval {
+    fn to_string(&self) -> String {
+        format!("{}-{}", self.start, self.end)
     }
 }
 
@@ -170,9 +226,21 @@ mod tests {
     }
 
     #[test]
-    fn test_constructor() {
+    fn test_constructor_Time() {
         assert_eq!(Time { val: 0 }.val, 0);
         assert_eq!(Time::new(0).val, 0);
+    }
+
+    #[test]
+    fn test_constructor_Interval {
+        assert_eq!(Interval { start: 0, end: 0 }.start, 0);
+        let cur_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        let offset = Time::new(1000000);
+        let curInterval = Interval::new(offset);
+        assert!(cur_time as u64 < curInterval.start.val);
+        assert!(cur_time + (cur_time+offset).val);
     }
 
     time_partial_eq! {
