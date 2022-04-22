@@ -1,3 +1,8 @@
+mod metrics;
+
+use crate::metrics::*;
+
 fn main() {
-    println!("Hello, world!");
+    println!("Running metrics regristry on test");
+    test_biz();
 }
