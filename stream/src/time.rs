@@ -87,7 +87,7 @@ impl Sub<u64> for Time {
 
     fn sub(self, other: u64) -> Time {
         Time {
-            val: self.val + other,
+            val: self.val - other,
         }
     }
 }
@@ -156,7 +156,7 @@ impl PartialOrd for Interval {
 
 impl ToString for Interval {
     fn to_string(&self) -> String {
-        format!("{:?}-{:?}", self.start, self.end) // Note:might want to convert ms since UNIX EPOCH to human readable time
+        format!("{:}-{:}", self.start.to_string(), self.end.to_string()) // Note:might want to convert ms since UNIX EPOCH to human readable time
     }
 }
 
@@ -253,6 +253,68 @@ mod tests {
         }
     }
 
+    macro_rules! time_add {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let (this, that, expected) = $value;
+                    assert!(this + that == expected);
+                }
+            )*
+        };
+    }
+
+    macro_rules! time_sub {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let (this, that, expected) = $value;
+                    assert!(this - that == expected);
+                }
+            )*
+        };
+    }
+
+    macro_rules! time_to_string {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let (this, expected) = $value;
+                    assert!(this.to_string() == expected);
+                }
+            )*
+        };
+    }
+
+    // FIXME: this should try and test intervals using ::new()
+    macro_rules! interval_add {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name(){
+                    let (this, that, expected) = $value;
+                    assert!(this + that == expected);
+                }
+            )*
+        };
+    }
+
+    //FIXME: this should try and test intervals using ::new()
+    macro_rules! interval_sub {
+        ($($name:ident: $value:expr,)*) => {
+            $(
+                #[test]
+                fn $name(){
+                    let (this, that, expected) = $value;
+                    assert!(this - that == expected);
+                }
+            )*
+        };
+    }
+
     #[test]
     fn test_constructor_time() {
         assert_eq!(Time { val: 0 }.val, 0);
@@ -278,6 +340,16 @@ mod tests {
         println!("{:?}", cur_interval.start);
         assert!((cur_time.as_millis() as u64) <= cur_interval.start.val);
         assert!(cur_interval.end >= Time::new(cur_time.as_millis() as u64) + offset);
+    }
+
+    time_to_string! {
+        test_to_string_time_zero: (Time::new(0), "0"),
+        test_to_string_time_one: (Time::new(1), "1"),
+        test_to_string_time_max: (Time::new(std::u64::MAX), "18446744073709551615"),
+    }
+
+    time_to_string! {
+        it_to_string_interval : (Interval{start: Time::new(0), end: Time::new(4)}, "0-4"),
     }
 
     time_partial_eq! {
@@ -335,5 +407,23 @@ mod tests {
     time_until! {
         until_lt : (Time::new(0), Time::new(4), Time::new(4)),
         until_gt : (Time::new(12), Time::new(200000), Time::new(199988)),
+    }
+
+    time_add! {
+        add_int : (Time::new(4), 2, Time::new(6)),
+        add_time : (Time::new(4), Time::new(2), Time::new(6)),
+    }
+
+    time_sub! {
+        sub_int : (Time::new(4), 2, Time::new(2)),
+        sub_time : (Time::new(4), Time::new(2), Time::new(2)),
+    }
+
+    interval_add! {
+        it_add : (Interval{start : Time::new(0), end : Time::new(4)}, Interval{start : Time::new(0), end : Time::new(2)}, Interval{start: Time::new(0), end : Time::new(6)}),
+    }
+
+    interval_sub! {
+        it_sub : (Interval{start : Time::new(0), end : Time::new(4)}, Interval{start : Time::new(0), end : Time::new(2)}, Interval{start: Time::new(0), end : Time::new(2)}),
     }
 }
