@@ -1,4 +1,5 @@
+#![warn(dead_code)]
 mod api;
-mod dataframe;
+mod dataset;
 mod metrics;
 mod reader;
