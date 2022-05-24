@@ -1,5 +1,7 @@
 #![warn(dead_code)]
 
+mod job;
+
 use crate::metrics::Biz as MockMetrics;
 use std::collections::HashMap;
 use std::sync::mpsc::channel;
